@@ -47,11 +47,11 @@ public class ClientReconnectTest {
     public void testReconnect() throws RemotingException, InterruptedException{
         {
             int port = NetUtils.getAvailablePort();
-            Client client = startClient(port, 20);
+            Client client = startClient(port, 500);
             Assert.assertEquals(false, client.isConnected());
             Server server = startServer(port);
             for (int i = 0; i < 3 && ! client.isConnected(); i++) {
-                Thread.sleep(10);
+                Thread.sleep(500);
             }
             Assert.assertEquals(true, client.isConnected());
             client.close(1500);
@@ -59,7 +59,7 @@ public class ClientReconnectTest {
         }
         {
             int port = NetUtils.getAvailablePort();
-            Client client = startClient(port, 300);
+            Client client = startClient(port, 500);
             Assert.assertEquals(false, client.isConnected());
             Server server = startServer(port);
             for(int i=0;i<2;i++){
@@ -78,7 +78,7 @@ public class ClientReconnectTest {
         int port = NetUtils.getAvailablePort();
         String url = "exchange://127.0.0.3:"+port + "/client.reconnect.test?transporter=netty4&check=false&"
         +Constants.RECONNECT_KEY+"="+10 //1ms reconnect,保证有足够频率的重连
-        +"&reconnect.waring.period=1";
+        +"&reconnect.waring.period=100";
         DubboAppender.doStart();
         Client client = Exchangers.connect(url);
         try {
@@ -86,7 +86,7 @@ public class ClientReconnectTest {
 		} catch (Exception e) {
 			//do nothing
 		}
-        Thread.sleep(500);//重连线程的运行
+        Thread.sleep(1500);//重连线程的运行
         Assert.assertTrue("have more then one warn msgs . bug was :" + LogUtil.findMessage(Level.WARN, "client reconnect to "),LogUtil.findMessage(Level.WARN, "client reconnect to ") >1);
         DubboAppender.doStop();
     }
@@ -101,9 +101,9 @@ public class ClientReconnectTest {
         int port = NetUtils.getAvailablePort();
         DubboAppender.doStart();
         String url = "exchange://127.0.0.4:"+port + "/client.reconnect.test?transporter=netty4&check=false&"
-        +Constants.RECONNECT_KEY+"="+1 //1ms reconnect,保证有足够频率的重连
+        +Constants.RECONNECT_KEY+"="+100
         +"&"+Constants.SHUTDOWN_TIMEOUT_KEY+ "=1"//shutdown时间足够短，确保error日志输出
-        +"&reconnect.waring.period=10";//每隔多少warning记录一次
+        +"&reconnect.waring.period=500";//每隔多少warning记录一次
         try{
             Exchangers.connect(url);
         }catch (Exception e) {
@@ -122,12 +122,12 @@ public class ClientReconnectTest {
     }
     
     public Client startClient(int port , int reconnectPeriod) throws RemotingException{
-        final String url = "exchange://127.0.0.1:"+port + "/client.reconnect.test?check=false&"+Constants.RECONNECT_KEY+"="+reconnectPeriod +"&transporter=netty4";
+        final String url = "exchange://127.0.0.1:"+port + "/client.reconnect.test?check=false&"+Constants.RECONNECT_KEY+"="+reconnectPeriod +"&transporter=netty4&reconnect.waring.period=3000";;
         return Exchangers.connect(url);
     }
     
     public Server startServer(int port) throws RemotingException{
-        final String url = "exchange://127.0.0.1:"+port +"/client.reconnect.test?transporter=netty4";
+        final String url = "exchange://127.0.0.1:"+port +"/client.reconnect.test?transporter=netty4&reconnect.waring.period=3000";
         return Exchangers.bind(url, new HandlerAdapter());
     }
     

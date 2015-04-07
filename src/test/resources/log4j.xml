@@ -30,7 +30,7 @@
 		</filter> -->
 	</appender>
 	<root>
-		<level value="INFO" />
+		<level value="WARN" />
 		<appender-ref ref="dubbo" />
 	</root>
 </log4j:configuration>
